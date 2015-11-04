@@ -1,0 +1,43 @@
+body {
+  font-weight: 900;
+}
+
+.event {
+  border: 4px solid #d25800;
+  color: #d25800;
+  text-align: center;
+  padding-top: 2%;
+  padding-bottom: 2%;
+  margin-bottom: 6%;
+  width: 67%;
+}
+
+.event:hover {
+  border: 4px solid #d10000;
+  color: #d10000;
+
+}
+
+.animated {
+  -webkit-animation-duration: 6s;
+  animation-duration: 6s;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
+}
+
+
+.btn-primary, .btn-primary:active, .btn-primary:visited {
+    background-color: #d25800 !important;
+    font-weight: 900;
+  }
+
+.btn-primary:hover {
+  background-color: #d10000 !important;
+  font-weight: 900;
+}
+
+textarea:focus, input:focus, .btn:focus, .form-control:focus, .uneditable-input:focus {
+    border-color: #d10000 !important;
+    box-shadow: 0 1px 1px rgba(229, 103, 23, 0.075) inset, 0 0 8px rgba(229, 103, 23, 0.6) !important;
+    outline: 0 none !important;
+}
