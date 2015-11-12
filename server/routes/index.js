@@ -6,6 +6,14 @@ var pizzapi = require('dominos');
 var Address = require('dominos').Address;
 var Customer = require('dominos').Customer;
 var Store = require('dominos').Store;
+var findStoreID = require('../../dominos.js').findStoreID;
+var createCustomer = require('../../dominos.js').createCustomer;
+var addItems = require('../../dominos.js').addItems;
+var createOrder = require('../../dominos.js').createOrder;
+var createStore = require('../../dominos.js').createStore;
+var pymtOrder = require('../../dominos.js').pymtOrder;
+var createCard = require('../../dominos.js').createCard;
+var addPymt = require('../../dominos.js').addPymt;
 
 // constants
 var meetupBaseURL = 'https://api.meetup.com/2/events?';
@@ -38,71 +46,25 @@ router.post('/zip', function(req, res, next) {
   });
 });
 
-
-// dominos lib code
+// dominos code
 router.post('/data', function(req, res, next){
   var meetupInfo = req.body;
+  var pepQuan = meetupInfo.quantities[0];
+  var hwnQuan = meetupInfo.quantities[1];
+  var vegQuan = meetupInfo.quantities[2];
   var address = meetupInfo.address_street+', '+meetupInfo.address_city+', '+'CO, '+ meetupInfo.zip_code;
+  var newCustomer = createCustomer(address, 'Michael', 'Herman', '8675309', 'sample@sample.org');
+
   pizzapi.Util.findNearbyStores(address,
     'Delivery',
-    function(data){
-      // console.log(data.result.Stores[0].StoreID);
-      myStore = new pizzapi.Store(
-        {
-          ID: data.result.Stores[0].StoreID
-        }
-      );
-      myStore.getMenu(
-        function(storeData) {
-          // console.log('\n\n##################\nClosest Store Menu\n##################\n\n',storeData.result);
-        }
-      );
+    function (data){
+      //returns store obj
+      var myStore = createStore(data.result.Stores[0].StoreID);
+      var order = createOrder(newCustomer, myStore.ID);
+      addItems(order, pepQuan, hwnQuan, vegQuan);
+      var cardInfo = createCard(order, '0000000000000000', '0116', '000', '80206');
+      var payment = addPymt(order, cardInfo);
+    });
+  });
 
-      var firstStoreID = data.result.Stores[0].StoreID;
-      var fullAddress = new Address(address);
-      var mHerman = new Customer(
-        {
-          address: fullAddress,
-          firstName: 'Michael',
-          lastName: 'Herman',
-          phone: '1-800-The-White-House',
-          email: 'br'
-        }
-      );
-      var order = new pizzapi.Order(
-        {
-          customer: mHerman,
-          deliveryMethod: 'Delivery',
-          storeID: firstStoreID
-        }
-      );
-      order.addItem(new pizzapi.Item(
-        {
-          code: 'P_16SCREEN',
-          options: [],
-          quantity: +meetupInfo.quantities[0]
-        }
-      )
-    );
-    order.addItem(new pizzapi.Item(
-      {
-        code: 'HN_16SCREEN',
-        options: [],
-        quantity: +meetupInfo.quantities[1]
-      }
-    )
-  );
-  order.addItem(new pizzapi.Item(
-    {
-      code: 'P_16IREPV',
-      options: [],
-      quantity: +meetupInfo.quantities[2]
-    }
-  )
-);
-console.log(order);
-}
-);
-});
-
-module.exports = router;
+  module.exports = router;
