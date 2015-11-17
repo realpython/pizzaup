@@ -51,16 +51,18 @@ myApp.controller("PizzaController", ["$scope", "$http", "meetupFactory", functio
   $scope.determineQuantity = function (attending, ratio) {
 
     var totalPizzas = Math.ceil((((parseInt(attending)*ratio)*2)/8));
+    var pepQuantity;
+    var cheeseQuantity;
+    var vegQuantity;
 
     if (totalPizzas <= 2) {
-      var pepQuantity = Math.ceil(totalPizzas * (0.4));
-      var cheeseQuantity = totalPizzas - pepQuantity;
-      var vegQuantity = 0;
-
+      pepQuantity = Math.ceil(totalPizzas * (0.4));
+      cheeseQuantity = totalPizzas - pepQuantity;
+      vegQuantity = 0;
     } else {
-      var pepQuantity = Math.ceil(totalPizzas * (0.4).toString());
-      var cheeseQuantity  = Math.floor(totalPizzas * (0.4).toString());
-      var vegQuantity = totalPizzas - (pepQuantity + cheeseQuantity);
+      pepQuantity = Math.ceil(totalPizzas * (0.4).toString());
+      cheeseQuantity  = Math.floor(totalPizzas * (0.4).toString());
+      vegQuantity = totalPizzas - (pepQuantity + cheeseQuantity);
     }
 
     $scope.pizzaQuantites = [pepQuantity.toString(), cheeseQuantity.toString(), vegQuantity.toString(), totalPizzas.toString()];

@@ -5,7 +5,7 @@
     <div class="form-group">
 
       <label>Paste MeetUp Event URL</label>
-      <input ng-model="eventURL" class="form-control" placeholder="MeetUp Event URL">
+      <input type="url"ng-model="eventURL" class="form-control" placeholder="MeetUp Event URL">
 
       <div class="col-xs-8 col-xs-offset-2">
         <button ng-click="findEvent(eventURL)" type="submit" class="btn btn-block btn-primary" required>Find Meet Up</button>
