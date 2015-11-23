@@ -1,27 +1,22 @@
 <div class="row">
 
-  <form class="col-xs-8 col-xs-offset-2">
+  <form class="col-xs-8 col-xs-offset-2" novalidate>
 
-    <div class="form-group">
-
+    <div class="form-group" ng-hide ="correctInfo">
       <label>Paste MeetUp Event URL</label>
-      <input type="url"ng-model="eventURL" class="form-control" placeholder="MeetUp Event URL">
-
+      <input ng-model="eventURL" class="form-control" placeholder="MeetUp Event URL">
+      <br>
       <div class="col-xs-8 col-xs-offset-2">
-        <button ng-click="findEvent(eventURL)" type="submit" class="btn btn-block btn-primary" required>Find Meet Up</button>
+        <button ng-click="findEvent(eventURL)" type="submit" class="btn btn-block btn-primary">Find Meet Up</button>
       </div>
-
-      <br><br>
-
-      <div ng-show="incorrectInfo" class="alert alert-danger col-xs-12">
-        <span> Please resubmit the Meetup link and/or verify that the Meetup page lists a valid address!</span>
-      </div>
-
+      <br><br><br>
     </div>
+
+    <div ng-if="alert" class="alert alert-{{alertClass}} col-xs-12">{{alertMessage}}</div>
 
     <br>
 
-    <div class="col-xs-8 col-xs-offset-2 event" ng-hide = "eventInfo == null">
+    <div class="col-xs-8 col-xs-offset-2 event" ng-hide="eventInfo == null || correctInfo">
       <p>Is this the correct event and address?</p>
       <p>{{eventInfo.name}}</p>
       <p>{{eventInfo.address_name}}, {{eventInfo.address_street}}, {{eventInfo.address_city}} {{eventInfo.zip_code}}</p>
@@ -29,11 +24,10 @@
       <button class="btn btn-sm btn-primary" ng-click = "denyInfo()">NO</button>
     </div>
 
-
-    <div ng-show = "correctInfo">
+    <div ng-show="correctInfo">
       <div class="form-group">
         <label>Select the percentage of MeetUp RSVPs that you expect to actually attend your event.</label>
-        <select class="form-control" ng-model = 'expectedRatio' required>
+        <select class="form-control" ng-model='expectedRatio' ng-change="determineQuantity(eventInfo.attending, expectedRatio)">
           <option value="" selected disabled>Expected Attendance</option>
           <option value = .1 >10%</option>
           <option value = .25>25%</option>
@@ -43,29 +37,31 @@
           <option value = .75>75%</option>
           <option value = .9>90%</option>
           <option value = 1>100%</option>
-          <option value = 1.1>110%</option>
+          <option value = 1.25>125%</option>
           <option value = 1.5>150%</option>
           <option value = 2>200%</option>
         </select>
+        <br>
       </div>
-
-
       <div>
         <hr>
         <label>Denver Pizza Co. Acccount Email</label>
-        <input ng-model = "email" type="email" class="form-control" placeholder="DPC Email" required>
+        <input ng-model = "email" type="email" class="form-control" placeholder="DPC Email">
       </div>
-
       <br>
-
       <div>
         <label>Denver Pizza Co. Account Password</label>
-        <input ng-model = "password" type="password" class="form-control" placeholder="DPC Password" required>
+        <input ng-model = "password" type="password" class="form-control" placeholder="DPC Password">
       </div>
-
+      <br>
       <div class="col-xs-8 col-xs-offset-2">
-        <button ng-click="placeOrder(data); addUser()" type="submit" class="btn btn-block btn-primary">Submit Order</button>
+        <button ng-click="placeOrder(data); addUser()" type="submit" class="btn btn-block btn-success">Submit Order</button>
+        <button ng-click="init()" type="submit" class="btn btn-block btn-warning">Start Over</button>
       </div>
     </div>
 
   </form>
+
+</div>
+
+<br><br>

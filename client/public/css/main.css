@@ -27,8 +27,8 @@ body {
 
 
 .btn-primary, .btn-primary:active, .btn-primary:visited {
-    background-color: #d25800 !important;
-    font-weight: 900;
+  background-color: #d25800 !important;
+  font-weight: 900;
   }
 
 .btn-primary:hover {
@@ -37,7 +37,7 @@ body {
 }
 
 textarea:focus, input:focus, .btn:focus, .form-control:focus, .uneditable-input:focus {
-    border-color: #d10000 !important;
-    box-shadow: 0 1px 1px rgba(229, 103, 23, 0.075) inset, 0 0 8px rgba(229, 103, 23, 0.6) !important;
-    outline: 0 none !important;
+  border-color: #d10000 !important;
+  box-shadow: 0 1px 1px rgba(229, 103, 23, 0.075) inset, 0 0 8px rgba(229, 103, 23, 0.6) !important;
+  outline: 0 none !important;
 }

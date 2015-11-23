@@ -1,60 +1,55 @@
-myApp.controller("PizzaController", ["$scope", "$http", "meetupFactory", function($scope, $http, meetupFactory) {
+ myApp.controller("PizzaController", ["$scope", "$http", "meetupFactory", function($scope, $http, meetupFactory) {
 
-  $scope.eventURL = "";
+  //Globals
+  $scope.eventURL = "http://www.meetup.com/Node-js-Denver-Boulder/events/226047336";
   $scope.correctInfo = false;
-  $scope.incorrectInfo = false;
+  $scope.alert = false;
 
   //Find specific event and create object
-  $scope.findEvent = function() {
-    $scope.eventID = $scope.eventURL.split("/").slice(-2,-1).toString();
-    meetupFactory.getEvent($scope.eventID)
-      .success(function(data){
-        $scope.eventInfo = {
-          name: data.name,
-          description: data.description,
-          attending: data.yes_rsvp_count,
-          address_name: data.venue.name,
-          address_street: data.venue.address_1.split(',')[0],
-          address_city: data.venue.city,
-          lat: data.venue.lat,
-          lon: data.venue.lon,
-          zip_code: '',
-          expected_ratio: Number,
-          user_email: String,
-          user_password: String,
-          quantities: Array
-        };
-      $scope.getZip($scope.eventInfo);
-      $scope.incorrectInfo = false;
-    })
-    .error(function(err){
-      console.log('There is an error');
-    });
+  $scope.findEvent = function(url) {
+    $scope.alert = false;
+    //Validate the URL
+    if (!validateURL(url)) {
+      //If invalid
+      $scope.alertClass = "danger";
+      $scope.alertMessage = 'Incorrect URL format. Please use - ' +
+        '"http://www.meetup.com/Node-js-Denver-Boulder/events/226047336".';
+      $scope.alert = true;
+    } else {
+      //If valid
+      var eventID = url.split("/").filter(Boolean)[4].toString();
+      meetupFactory.getEvent(eventID)
+        .success(function(data){
+          $scope.eventInfo = {
+            name: data.name,
+            description: data.description,
+            attending: data.yes_rsvp_count,
+            address_name: data.venue.name,
+            address_street: data.venue.address_1.split(',')[0],
+            address_city: data.venue.city,
+            lat: data.venue.lat,
+            lon: data.venue.lon,
+            zip_code: '',
+            expected_ratio: Number,
+            user_email: String,
+            user_password: String,
+            quantities: Array
+          };
+        getZip($scope.eventInfo);
+        $scope.alert = false;
+      })
+      .error(function(err){
+        console.log('There is an error'); // WTF
+      });
+    }
   };
 
-  //posts object to /data
-  $scope.placeOrder = function(info) {
-    return meetupFactory.placeOrder($scope.eventInfo);
-  };
-
-  //return zip from lat/long
-  $scope.getZip = function(eventInfo) {
-    meetupFactory.getZip({lat: eventInfo.lat, lon: eventInfo.lon})
-    .success(function(data){
-      eventInfo.zip_code = data;
-    })
-    .error(function(err) {
-      console.log('There is an error');
-    });
-  };
-
-  $scope.determineQuantity = function (attending, ratio) {
-
+  //Determine number of pizzas to order
+  $scope.determineQuantity = function(attending, ratio) {
     var totalPizzas = Math.ceil((((parseInt(attending)*ratio)*2)/8));
     var pepQuantity;
     var cheeseQuantity;
     var vegQuantity;
-
     if (totalPizzas <= 2) {
       pepQuantity = Math.ceil(totalPizzas * (0.4));
       cheeseQuantity = totalPizzas - pepQuantity;
@@ -64,11 +59,16 @@ myApp.controller("PizzaController", ["$scope", "$http", "meetupFactory", functio
       cheeseQuantity  = Math.floor(totalPizzas * (0.4).toString());
       vegQuantity = totalPizzas - (pepQuantity + cheeseQuantity);
     }
+    $scope.pizzaQuantities = [pepQuantity.toString(), cheeseQuantity.toString(), vegQuantity.toString(), totalPizzas.toString()];
+    $scope.alert = true;
+    $scope.alertClass = 'success';
+    $scope.alertMessage = $scope.pizzaQuantities;
+    return $scope.pizzaQuantities;
+  };
 
-    $scope.pizzaQuantites = [pepQuantity.toString(), cheeseQuantity.toString(), vegQuantity.toString(), totalPizzas.toString()];
-
-    return $scope.pizzaQuantites;
-
+  //Posts object to /data
+  $scope.placeOrder = function(info) {
+    return meetupFactory.placeOrder($scope.eventInfo);
   };
 
   //Add DPC username and password + expected attendance ratio to event object
@@ -87,10 +87,47 @@ myApp.controller("PizzaController", ["$scope", "$http", "meetupFactory", functio
 
   //Reject Event Info
   $scope.denyInfo = function () {
-    $scope.incorrectInfo = true;
+    $scope.alert = true;
     $scope.eventInfo = null;
     $scope.eventURL = "";
+    $scope.alertClass = "danger";
+    $scope.alertMessage = 'Please resubmit the Meetup link and/or verify that the Meetup page lists a valid address!';
   };
+
+
+// helper functions
+
+// validate the user supplied URL
+function validateURL(url) {
+  splitURL = url.split("/").filter(Boolean);
+  if (splitURL.length !== 5) {
+    return false;
+  }
+  if (!splitURL[0].match('http')) {
+    return false;
+  }
+  if (splitURL[1] !== 'www.meetup.com') {
+    return false;
+  }
+  if (splitURL[3] !== 'events') {
+    return false;
+  }
+  if (isNaN(parseInt(splitURL[4]))) {
+    return false;
+  }
+  return true;
+}
+
+//return zip from lat/long
+function getZip(eventInfo) {
+  meetupFactory.getZip({lat: eventInfo.lat, lon: eventInfo.lon})
+  .success(function(data){
+    eventInfo.zip_code = data;
+  })
+  .error(function(err) {
+    console.log('There is an error');
+  });
+}
 
 
 }]);
