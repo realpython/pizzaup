@@ -14,6 +14,7 @@ var createStore = require('../../dominos.js').createStore;
 var pymtOrder = require('../../dominos.js').pymtOrder;
 var createCard = require('../../dominos.js').createCard;
 var addPymt = require('../../dominos.js').addPymt;
+var meetup = require('../bin/meetup.js');
 
 // constants
 var meetupBaseURL = 'https://api.meetup.com/2/events?';
@@ -44,6 +45,14 @@ router.post('/zip', function(req, res, next) {
     }
     res.send(JSON.parse(data.body).results[0].address_components[7].short_name);
   });
+});
+
+// validate the meetup url
+router.post('/validate', async function(req, res, next) {
+  res.send(await meetup({
+    url: req.body.url,
+    token: config.meetupkey
+  }));
 });
 
 // dominos code

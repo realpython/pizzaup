@@ -1,4 +1,4 @@
- myApp.controller("PizzaController", ["$scope", "$http", "meetupFactory", function($scope, $http, meetupFactory) {
+ myApp.controller("PizzaController", ["$scope", "$http", "meetupFactory", "$q", function($scope, $http, meetupFactory, $q) {
 
   //Globals
   $scope.eventURL = "http://www.meetup.com/Node-js-Denver-Boulder/events/226047336";
@@ -9,39 +9,52 @@
   $scope.findEvent = function(url) {
     $scope.alert = false;
     //Validate the URL
-    if (!validateURL(url)) {
-      //If invalid
-      $scope.alertClass = "danger";
-      $scope.alertMessage = 'Incorrect URL format. Please use - ' +
-        '"http://www.meetup.com/Node-js-Denver-Boulder/events/226047336".';
-      $scope.alert = true;
-    } else {
-      //If valid
-      var eventID = url.split("/").filter(Boolean)[4].toString();
-      meetupFactory.getEvent(eventID)
-        .success(function(data){
-          $scope.eventInfo = {
-            name: data.name,
-            description: data.description,
-            attending: data.yes_rsvp_count,
-            address_name: data.venue.name,
-            address_street: data.venue.address_1.split(',')[0],
-            address_city: data.venue.city,
-            lat: data.venue.lat,
-            lon: data.venue.lon,
-            zip_code: '',
-            expected_ratio: Number,
-            user_email: String,
-            user_password: String,
-            quantities: Array
-          };
-        getZip($scope.eventInfo);
-        $scope.alert = false;
-      })
-      .error(function(err){
-        console.log('There is an error'); // WTF
-      });
-    }
+    validateURL(url).then(urlResult =>
+    {
+      if (!urlResult.data.valid)
+      {
+        //If invalid
+        $scope.alertClass = "danger";
+        $scope.alertMessage = `${urlResult.data.message} - remember, valid url format is http://www.meetup.com/Node-js-Denver-Boulder/events/226047336.`;
+        $scope.alert = true;
+      } else {
+        //If valid
+        $scope.eventInfo = {
+          name: urlResult.data.name,
+          description: urlResult.data.description,
+          attending: urlResult.data.yes_rsvp_count,
+          address_name: urlResult.data.venue.name,
+          address_street: urlResult.data.venue.address_1.split(',')[0],
+          address_city: urlResult.data.venue.city,
+          lat: urlResult.data.venue.lat,
+          lon: urlResult.data.venue.lon,
+        }
+        // var eventID = url.split("/").filter(Boolean)[4].toString();
+        // meetupFactory.getEvent(eventID)
+        //   .success(function(data){
+        //     $scope.eventInfo = {
+        //       name: data.name,
+        //       description: data.description,
+        //       attending: data.yes_rsvp_count,
+        //       address_name: data.venue.name,
+        //       address_street: data.venue.address_1.split(',')[0],
+        //       address_city: data.venue.city,
+        //       lat: data.venue.lat,
+        //       lon: data.venue.lon,
+        //       zip_code: '',
+        //       expected_ratio: Number,
+        //       user_email: String,
+        //       user_password: String,
+        //       quantities: Array
+        //     };
+        //   getZip($scope.eventInfo);
+          $scope.alert = false;
+        }
+    })
+    .catch(err =>
+    {
+      console.log('There is an error'); // WTF
+    });
   };
 
   //Determine number of pizzas to order
@@ -99,23 +112,36 @@
 
 // validate the user supplied URL
 function validateURL(url) {
+  const deferred = $q.defer();
+
   splitURL = url.split("/").filter(Boolean);
   if (splitURL.length !== 5) {
-    return false;
+    deferred.resolve({
+      data: {valid: false, message: "Invalid URL Format"}
+    })
   }
-  if (!splitURL[0].match('http')) {
-    return false;
+  else if (!splitURL[0].match('http')) {
+    deferred.resolve({
+      data: {valid: false, message: "Invalid Protocol"}
+    })
   }
   if (splitURL[1] !== 'www.meetup.com') {
-    return false;
+    deferred.resolve({
+      data: {valid: false, message: "Invalid Host specified"}
+    })
   }
   if (splitURL[3] !== 'events') {
-    return false;
+    deferred.resolve({
+      data: {valid: false, message: "Invalid URL structure"}
+    })
   }
   if (isNaN(parseInt(splitURL[4]))) {
-    return false;
+    deferred.resolve({
+      data: {valid: false, message: "Invalid URL specified"}
+    })
   }
-  return true;
+  $http.post("/validate", {url: url}).then(deferred.resolve).catch(deferred.reject);
+  return deferred.promise;
 }
 
 //return zip from lat/long
